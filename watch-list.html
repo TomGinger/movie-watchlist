@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+    <head><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.css">
+        <link rel="stylesheet" href="watchlist.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&display=swap" rel="stylesheet">
+    </head>
+    <body>
+        <div class="container">
+            <header>
+                    <h1>Find your Film</h1>
+                    <a href="index.html">Search for movies</a>
+            </header>
+            <main>
+                <div class="search-bar">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input id="input-film" type="text" placeholder="Search for a movie" />
+                    <button id="search-btn">Search</button>
+                </div>
+                <div id="post-container">
+                    <div class="post-container-default">
+                        <p>Your watchlist is looking a little empty...</p>
+                        <div class="empty-watchlist">
+                            <i class="fa-solid fa-circle-plus"></i>
+                            <p>Let´s add some more movies!</p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+            <script src="index.js"></script>
+    </body>
+</html>
