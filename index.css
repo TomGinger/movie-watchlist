@@ -88,6 +88,10 @@ header > a {
     margin: 2em;
 }
 
+.green {
+    color: green;
+}
+
 .post-empty {
     text-align: center; 
     color: #D1D5DB;

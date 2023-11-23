@@ -79,11 +79,11 @@ header > a {
 
 /*  Post container  */
 
-#post-container {
+#watch-list-container {
     margin: 2em 1.5em;
 }
 
-.post-container-default {
+.watch-list-container-empty {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -93,11 +93,11 @@ header > a {
     margin: 10em 0;
 }
 
-.post-container-default i {
+.watch-list-container-empty i {
     font-size: 4rem;
 }
 
-.post-container-default p {
+.watch-list-container-empty p {
     font-size: 1.2rem;
 }
 

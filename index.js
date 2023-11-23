@@ -1,21 +1,18 @@
 'use strict'
-
 const apiKey = "6fb3e59f";
 //const imdbId = "tt3896198";
 const inputFilm = document.getElementById("input-film");
 const searchBtn = document.getElementById("search-btn");
 const postContainer = document.getElementById("post-container");
-
-
+const watchListContainer = document.getElementById("watch-list-container");
 let searchArray = [];
 
     
 searchBtn.addEventListener("click", async () => {
     const res = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&s=${inputFilm.value}`)
     const data = await res.json();
-    loopMovies(data); 
-           
-    inputFilm.value = "";
+    
+    loopMovies(data);        
 })
 
 function loopMovies(data) {
@@ -69,17 +66,21 @@ function renderMoviePosts(post) {
         });   
 }
 
-function addToLocalStorage(searchArray) {
-    const moviesArray = JSON.stringify(searchArray) || [];
-    localStorage.setItem("movieSearch", moviesArray);
-    const storedData = localStorage.getItem("movieSearch");
+document.addEventListener("click", function (e) {
+    if(e.target.dataset.id) {
+        const movieId = e.target.dataset.id;
+        addToWatchList(movieId);
+    }
+}) 
 
-    const storedObject = JSON.parse(storedData);
-    
-    console.log(storedObject);
+function addToWatchList(movieId) {
+    let watchList = JSON.parse(localStorage.getItem("watchlist")) || [];
+     
+    if(!watchList.includes(movieId)) {
+        watchList.push(movieId);
+        localStorage.setItem("watchlist", JSON.stringify(watchList));
+    }
 }
-
-
 
 
 
