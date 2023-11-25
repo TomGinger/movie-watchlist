@@ -1,10 +1,15 @@
 const apiKey = "6fb3e59f";
 const watchListContainer = document.getElementById("watch-list-container");
+const watchlist = JSON.parse(localStorage.getItem("watchlist")) || [];
 
+const deleteHtml = localStorage.getItem("detectHtml");
+
+
+console.log(watchlist);
 async function getWatchlistDetails() {
-    watchListContainer.innerHTML = "";
-    const watchlist = JSON.parse(localStorage.getItem("watchlist")) || [];
-
+    if(deleteHtml === "true") {
+            watchListContainer.innerHTML = "";
+    }
     // Loop through the watchlist and make API calls for each movie
     for (const movieId of watchlist) {
         const res = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&i=${movieId}`);
@@ -36,4 +41,19 @@ async function getWatchlistDetails() {
         `
     }
 }
+
 getWatchlistDetails();
+
+
+document.addEventListener("click", (e) => {
+    const movieId = e.target.dataset.id;
+
+    if(movieId) {
+        const indexOfId = watchlist.indexOf(movieId);
+
+        watchlist.splice(indexOfId, 1);
+        localStorage.setItem("watchlist", JSON.stringify(watchlist));
+        getWatchlistDetails();
+    }
+
+})

@@ -7,7 +7,6 @@ const postContainer = document.getElementById("post-container");
 const watchListContainer = document.getElementById("watch-list-container");
 let searchArray = [];
 
-    
 searchBtn.addEventListener("click", async () => {
     const res = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&s=${inputFilm.value}`)
     const data = await res.json();
@@ -67,8 +66,8 @@ function renderMoviePosts(post) {
 }
 
 document.addEventListener("click", function (e) {
-    if(e.target.dataset.id) {
-        const movieId = e.target.dataset.id;
+    const movieId = e.target.dataset.id;
+    if(movieId) {
         addToWatchList(movieId);
     }
 }) 
@@ -79,6 +78,9 @@ function addToWatchList(movieId) {
     if(!watchList.includes(movieId)) {
         watchList.push(movieId);
         localStorage.setItem("watchlist", JSON.stringify(watchList));
+        localStorage.setItem("detectHtml", "true");
+    }else {
+        console.log("Its already ")
     }
 }
 
