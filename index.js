@@ -1,4 +1,5 @@
 'use strict'
+// Variables, keys, DOM manipulation 
 const apiKey = "6fb3e59f";
 //const imdbId = "tt3896198";
 const inputFilm = document.getElementById("input-film");
@@ -7,13 +8,17 @@ const postContainer = document.getElementById("post-container");
 const watchListContainer = document.getElementById("watch-list-container");
 let searchArray = [];
 
+//  Search button, when user search for movie title(input.value), gives the value to API call and fetch data from movies API
+//  and the data is given to loopMovies function
 searchBtn.addEventListener("click", async () => {
     const res = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&s=${inputFilm.value}`)
     const data = await res.json();
-    
-    loopMovies(data);        
+
+    loopMovies(data);
 })
 
+// Looping through data given by movies API call and pushing to new array that data, if user puts invalid input.value,
+// its secured to throw error and give him and warning through UI.
 function loopMovies(data) {
     try {
         searchArray = [];
@@ -31,13 +36,15 @@ function loopMovies(data) {
 
 }
 
+
+// Rendering from the new array that is made by loopMovies function and putting it to UI
 function renderMoviePosts(post) {
         postContainer.innerHTML = "";
         post.forEach(async movie => {
             
             const res = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&i=${movie.imdbID}`)
             const moviePost = await res.json();
-             
+
             postContainer.innerHTML += `
                 <div class="movie-post-container">
                     <img src="${moviePost.Poster}">
@@ -62,15 +69,18 @@ function renderMoviePosts(post) {
                     </div>
                 </div>`
  
-        });   
+        }); 
 }
 
+// Catching id of movie to save it in localStorage, chatching it from data-id
 document.addEventListener("click", function (e) {
     const movieId = e.target.dataset.id;
     if(movieId) {
         addToWatchList(movieId);
     }
 }) 
+
+// Saving movies to localStorage to render them in watchlist
 
 function addToWatchList(movieId) {
     let watchList = JSON.parse(localStorage.getItem("watchlist")) || [];
@@ -80,10 +90,6 @@ function addToWatchList(movieId) {
         localStorage.setItem("watchlist", JSON.stringify(watchList));
         localStorage.setItem("detectHtml", "true");
     }else {
-        console.log("Its already ")
+        alert("You have already added this film to your watchlist!");
     }
 }
-
-
-
-//{Title: "Batman Begins", Year: "2005", Rated: "PG-13", Released: "15 Jun 2005", Runtime: "140 min", Genre: "Action, Crime, Drama", Director: "Christopher Nolan", Writer: "Bob Kane, David S. Goyer, Christopher Nolan", Actors: "Christian Bale, Michael Caine, Ken Watanabe", Plot: "After witnessing his parents' death, Bruce learns the art of fighting to confront injustice. When he returns to Gotham as Batman, he must stop a secret society that intends to destroy the city.", Language: "English, Mandarin", Country: "United States, United Kingdom", Awards: "Nominated for 1 Oscar. 14 wins & 79 nominations total", Poster: "https://m.media-amazon.com/images/M/MV5BOTY4YjI2N2MtYmFlMC00ZjcyLTg3YjEtMDQyM2ZjYzQ5YWFkXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg", Ratings: [{Source: "Internet Movie Database", Value: "8.2/10"}, {Source: "Rotten Tomatoes", Value: "85%"}, {Source: "Metacritic", Value: "70/100"}], Metascore: "70", imdbRating: "8.2", imdbVotes: "1,540,461", imdbID: "tt0372784", Type: "movie", DVD: "09 Sep 2009", BoxOffice: "$206,863,479", Production: "N/A", Website: "N/A", Response: "True"}

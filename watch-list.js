@@ -1,16 +1,16 @@
+// Variables, keys and DOM manipulation
 const apiKey = "6fb3e59f";
 const watchListContainer = document.getElementById("watch-list-container");
 const watchlist = JSON.parse(localStorage.getItem("watchlist")) || [];
 
 const deleteHtml = localStorage.getItem("detectHtml");
 
-
-console.log(watchlist);
+// Rendering each movie saved into localStorage 
 async function getWatchlistDetails() {
     if(deleteHtml === "true") {
             watchListContainer.innerHTML = "";
     }
-    // Loop through the watchlist and make API calls for each movie
+    // Looping through the watchlist and make API calls for each movie
     for (const movieId of watchlist) {
         const res = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&i=${movieId}`);
         const moviePost = await res.json();
@@ -45,6 +45,7 @@ async function getWatchlistDetails() {
 getWatchlistDetails();
 
 
+// Deleting movie selected by click on data-id, updating UI and updating localStorage to prevent loading deleted movie when we reload page
 document.addEventListener("click", (e) => {
     const movieId = e.target.dataset.id;
 
