@@ -20,6 +20,7 @@ input {
 
 h1 {
     margin: 0;
+    color: #fff;
 }
 
 /*  header */
@@ -29,8 +30,10 @@ header {
     justify-content: space-between;
     align-items: center;
     height: 250px;
-    background-image: url("images/bg.png");
+    background-color: #085a6f;
+    background-image: url("../images/background.jpg");
     background-size: cover;
+    background-position: center;
     padding: 3em;
 }
 
@@ -38,6 +41,7 @@ header > a {
     text-decoration: none;
     color: black;
     font-weight: bold;
+    color: #fff;
 }
 
 /*  Search bar   */
