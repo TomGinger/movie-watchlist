@@ -1,5 +1,4 @@
-// Variables, keys and DOM manipulation
-const apiKey = "6fb3e59f";
+// Variables, DOM manipulation
 const watchListContainer = document.getElementById("watch-list-container");
 const watchlist = JSON.parse(localStorage.getItem("watchlist")) || [];
 
