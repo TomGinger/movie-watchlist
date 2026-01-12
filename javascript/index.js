@@ -1,5 +1,6 @@
 'use strict'
-// Variables, DOM manipulation 
+// Variables, DOM manipulation
+const apiKey = "6fb3e59f";
 const inputFilm = document.getElementById("input-film");
 const searchBtn = document.getElementById("search-btn");
 const postContainer = document.getElementById("post-container");
