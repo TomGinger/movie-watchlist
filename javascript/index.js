@@ -7,17 +7,37 @@ const postContainer = document.getElementById("post-container");
 const watchListContainer = document.getElementById("watch-list-container");
 let searchArray = [];
 
-//  Search button, when user search for movie title(input.value), gives the value to API call and fetch data from movies API
-//  and the data is given to loopMovies function
-searchBtn.addEventListener("click", async () => {
-    const res = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&s=${inputFilm.value}`)
-    const data = await res.json();
+document.addEventListener("DOMContentLoaded", () => {
+    // Přečte ?s=nazevfilmu z adresy
+    const urlParams = new URLSearchParams(window.location.search);
+    const query = urlParams.get('s');
+    
+    // Pokud tam něco je, vloží to do inputu a spustí hledání
+    if (query) {
+        inputFilm.value = query;
+        runSearch(query);
+    }
+});
 
-    loopMovies(data);
+searchBtn.addEventListener("click", () => {
+    // Uložíme hodnotu do URL historie
+    const searchValue = inputFilm.value;
+    if (searchValue) {
+        const newUrl = `${window.location.pathname}?s=${searchValue}`;
+        window.history.pushState({ path: newUrl }, '', newUrl);
+        
+        // Spustíme hledání
+        runSearch(searchValue);
+    }
 })
 
-// Looping through data given by movies API call and pushing to new array that data, if user puts invalid input.value,
-// its secured to throw error and give him and warning through UI.
+async function runSearch(searchValue) {
+    const res = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&s=${searchValue}`)
+    const data = await res.json();
+    loopMovies(data); // Volá tvou původní funkci
+}
+
+
 function loopMovies(data) {
     try {
         searchArray = [];
