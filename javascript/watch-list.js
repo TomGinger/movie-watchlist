@@ -3,13 +3,23 @@ const apiKey = "6fb3e59f";
 const watchListContainer = document.getElementById("watch-list-container");
 const watchlist = JSON.parse(localStorage.getItem("watchlist")) || [];
 
-const deleteHtml = localStorage.getItem("detectHtml");
-
 // Rendering each movie saved into localStorage 
 async function getWatchlistDetails() {
-    if(deleteHtml === "true") {
-            watchListContainer.innerHTML = "";
+    if(watchlist.length === 0) {
+            watchListContainer.innerHTML = `
+            <div class="watch-list-container-empty">
+                <p>Your watchlist is looking a little empty...</p>
+                <a href="index.html" class="empty-watchlist">
+                    <i class="fa-solid fa-circle-plus"></i>
+                    <p>Let's add some movies!</p>
+                </a>
+            </div>
+        `;
+        return;
     }
+
+    watchListContainer.innerHTML = "";
+
     // Looping through the watchlist and make API calls for each movie
     for (const movieId of watchlist) {
         const res = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&i=${movieId}`);

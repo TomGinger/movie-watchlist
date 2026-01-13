@@ -1,4 +1,3 @@
-'use strict'
 // Variables, DOM manipulation
 const apiKey = "6fb3e59f";
 const inputFilm = document.getElementById("input-film");
@@ -107,7 +106,6 @@ function addToWatchList(movieId) {
     if(!watchList.includes(movieId)) {
         watchList.push(movieId);
         localStorage.setItem("watchlist", JSON.stringify(watchList));
-        localStorage.setItem("detectHtml", "true");
     }else {
         alert("You have already added this film to your watchlist!");
     }
