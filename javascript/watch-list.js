@@ -1,10 +1,12 @@
-// Variables, DOM manipulation
-const apiKey = "6fb3e59f";
+//Proměnné a výběr DOM prvků
+const apiKey = "6fb3e59f"; // API klíč
 const watchListContainer = document.getElementById("watch-list-container");
+//Načte pole ID filmů z LocalStorage, v případě že localStorage je prázdné použije se prázdné pole
 const watchlist = JSON.parse(localStorage.getItem("watchlist")) || [];
 
-// Rendering each movie saved into localStorage 
+//Rendrování filmů uložených v localStorage
 async function getWatchlistDetails() {
+    //Ošetření, kdyby seznam byl prázdný
     if(watchlist.length === 0) {
             watchListContainer.innerHTML = `
             <div class="watch-list-container-empty">
@@ -20,11 +22,14 @@ async function getWatchlistDetails() {
 
     watchListContainer.innerHTML = "";
 
-    // Looping through the watchlist and make API calls for each movie
+    //Načítání detailů filmů
+    //For of loop projíždí každé uložené ID ve watchlistu 
     for (const movieId of watchlist) {
+        //Pro každé id je voláno API, abychom získali detaily
         const res = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&i=${movieId}`);
         const moviePost = await res.json();
         
+        //Definování HTML struktury karty 
         watchListContainer.innerHTML += `
                  <div class="movie-post-container">
                     <img src="${moviePost.Poster}">
@@ -54,16 +59,19 @@ async function getWatchlistDetails() {
 
 getWatchlistDetails();
 
-
-// Deleting movie selected by click on data-id, updating UI and updating localStorage to prevent loading deleted movie when we reload page
+//Odstranění filmů ze seznamu
 document.addEventListener("click", (e) => {
+    //Zjištění id filmu, který chceme odstranit
     const movieId = e.target.dataset.id;
 
     if(movieId) {
+        //Zjištění indexu filmu v poli
         const indexOfId = watchlist.indexOf(movieId);
-
+        //Odstranění prvku na nalezené pozici
         watchlist.splice(indexOfId, 1);
+        //Aktualizované pole se ukládá do localStorage
         localStorage.setItem("watchlist", JSON.stringify(watchlist));
+        //Volání funkce, která nám vyrendruje zmenšený seznam na stránku
         getWatchlistDetails();
     }
 
