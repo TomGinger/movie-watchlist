@@ -1,6 +1,7 @@
 # Movie Watchlist
 
 A web app for searching movies and managing your personal watchlist, powered by the [OMDb API](https://www.omdbapi.com/).
+https://tomginger.github.io/movie-watchlist/
 
 ## Features
 
