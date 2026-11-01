@@ -24,7 +24,7 @@ https://tomginger.github.io/movie-watchlist/
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/TomRidvan/movie-watchlist.git
+git clone https://github.com/TomGinger/movie-watchlist.git
 cd movie-watchlist
 ```
 
