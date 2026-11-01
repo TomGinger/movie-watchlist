@@ -20,14 +20,28 @@ async function getWatchlistDetails() {
         return;
     }
 
-    watchListContainer.innerHTML = "";
-
     // Načtení detailů všech filmů paralelně
-    const movies = await Promise.all(
-        watchlist.map(id =>
-            fetch(`https://www.omdbapi.com/?apikey=${apiKey}&i=${id}`).then(r => r.json())
-        )
-    );
+    let movies;
+    try {
+        movies = await Promise.all(
+            watchlist.map(async id => {
+                const res = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&i=${id}`);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+                if (data.Response === "False") throw new Error(data.Error);
+                return data;
+            })
+        );
+    } catch (error) {
+        console.error("Error fetching watchlist:", error);
+        watchListContainer.innerHTML = `
+            <div class="watch-list-container-empty">
+                <p>Something went wrong while loading your watchlist. Please try again.</p>
+            </div>`;
+        return;
+    }
+
+    watchListContainer.innerHTML = "";
 
     movies.forEach(moviePost => {
         const posterSrc = moviePost.Poster !== "N/A" ? moviePost.Poster : null;
@@ -71,6 +85,10 @@ document.addEventListener("click", (e) => {
 });
 
 function animateRemove(el) {
+    // Ochrana proti opakovanému kliknutí během animace
+    if (el.dataset.removing) return;
+    el.dataset.removing = "true";
+
     const wrapper = el.parentElement;
     const card = el.closest(".movie-post-container");
     const r = 13;
@@ -118,7 +136,7 @@ function animateRemove(el) {
     // Odstranění z localStorage a re-render
     setTimeout(() => {
         const indexOfId = watchlist.indexOf(el.dataset.id);
-        watchlist.splice(indexOfId, 1);
+        if (indexOfId !== -1) watchlist.splice(indexOfId, 1);
         localStorage.setItem("watchlist", JSON.stringify(watchlist));
         getWatchlistDetails();
     }, 1050);

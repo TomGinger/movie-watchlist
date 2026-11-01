@@ -18,6 +18,22 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
+// Obsluha tlačítek Zpět/Vpřed v prohlížeči
+window.addEventListener("popstate", () => {
+    const query = new URLSearchParams(window.location.search).get('s');
+    if (query) {
+        inputFilm.value = query;
+        runSearch(query);
+    } else {
+        inputFilm.value = "";
+        postContainer.innerHTML = `
+            <div class="post-empty">
+                <i class="fa-solid fa-film"></i>
+                <p>Start exploring</p>
+            </div>`;
+    }
+});
+
 // Hledání přes tlačítko
 searchBtn.addEventListener("click", () => {
     const searchValue = inputFilm.value.trim();
