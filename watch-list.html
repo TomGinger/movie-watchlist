@@ -1,6 +1,10 @@
 <!DOCTYPE html>
-<html>
-    <head><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.css">
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.css">
+        <link rel="stylesheet" href="css/shared.css">
         <link rel="stylesheet" href="css/watchlist.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11,8 +15,13 @@
     <body>
         <div class="container">
             <header>
-                    <h1>My watchlist</h1>
+                <h1>My watchlist</h1>
+                <div class="header-actions">
                     <a href="index.html" class="nav-link">Search for movies</a>
+                    <button id="theme-toggle" aria-label="Toggle dark mode">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
+                </div>
             </header>
             <main>
                 <div id="watch-list-container">
@@ -26,7 +35,6 @@
                 </div>
             </main>
         </div>
-            <script src="javascript/config.js"></script>
-            <script src="javascript/watch-list.js"></script>
+        <script type="module" src="javascript/watch-list.js"></script>
     </body>
 </html>

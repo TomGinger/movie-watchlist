@@ -1,78 +1,125 @@
-//Proměnné a výběr DOM prvků
-const apiKey = "6fb3e59f"; // API klíč
+import { apiKey, initTheme, toggleTheme } from './config.js';
+
+initTheme();
+document.getElementById("theme-toggle").addEventListener("click", toggleTheme);
+
+// DOM prvky
 const watchListContainer = document.getElementById("watch-list-container");
-//Načte pole ID filmů z LocalStorage, v případě že localStorage je prázdné použije se prázdné pole
 const watchlist = JSON.parse(localStorage.getItem("watchlist")) || [];
 
-//Rendrování filmů uložených v localStorage
 async function getWatchlistDetails() {
-    //Ošetření, kdyby seznam byl prázdný
-    if(watchlist.length === 0) {
-            watchListContainer.innerHTML = `
+    if (watchlist.length === 0) {
+        watchListContainer.innerHTML = `
             <div class="watch-list-container-empty">
                 <p>Your watchlist is looking a little empty...</p>
                 <a href="index.html" class="empty-watchlist">
                     <i class="fa-solid fa-circle-plus"></i>
                     <p>Let's add some movies!</p>
                 </a>
-            </div>
-        `;
+            </div>`;
         return;
     }
 
     watchListContainer.innerHTML = "";
 
-    //Načítání detailů filmů
-    //For of loop projíždí každé uložené ID ve watchlistu 
-    for (const movieId of watchlist) {
-        //Pro každé id je voláno API, abychom získali detaily
-        const res = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&i=${movieId}`);
-        const moviePost = await res.json();
-        
-        //Definování HTML struktury karty 
+    // Načtení detailů všech filmů paralelně
+    const movies = await Promise.all(
+        watchlist.map(id =>
+            fetch(`https://www.omdbapi.com/?apikey=${apiKey}&i=${id}`).then(r => r.json())
+        )
+    );
+
+    movies.forEach(moviePost => {
+        const posterSrc = moviePost.Poster !== "N/A" ? moviePost.Poster : null;
+
         watchListContainer.innerHTML += `
-                 <div class="movie-post-container">
-                    <img src="${moviePost.Poster}">
-                    
-                    <div class="movie-post-info">
-                        <div class="post-header">
-                            <h2>${moviePost.Title}</h2>
-                            <div class="movie-rating">
-                                <i class="fa-solid fa-star"></i>
-                                <p>${moviePost.imdbRating}</p>
-                            </div>
+            <div class="movie-post-container">
+                <div class="poster-container">
+                    <i class="fa-solid fa-film poster-fallback"></i>
+                    ${posterSrc ? `<img src="${posterSrc}" alt="${moviePost.Title} poster" onerror="this.style.display='none'">` : ""}
+                </div>
+                <div class="movie-post-info">
+                    <div class="post-header">
+                        <h2>${moviePost.Title}</h2>
+                        <div class="movie-rating">
+                            <i class="fa-solid fa-star"></i>
+                            <p>${moviePost.imdbRating}</p>
                         </div>
-                        <div class="genre-runtime">
-                            <p>${moviePost.Runtime}</p>
-                            <p>${moviePost.Genre}</p>
-                            <div>
-                                <i class="fa-solid fa-circle-minus" data-id="${moviePost.imdbID}"></i>
-                                <p>Watchlist</p>
-                            </div>
-                        </div>
-                        <p>${moviePost.Plot}</p>
                     </div>
-            </div>
-        `
-    }
+                    <div class="genre-runtime">
+                        <p>${moviePost.Runtime}</p>
+                        <p>${moviePost.Genre}</p>
+                        <div>
+                            <span class="watchlist-icon-wrapper">
+                                <i class="fa-solid fa-circle-minus" data-id="${moviePost.imdbID}"></i>
+                            </span>
+                            <p>Watchlist</p>
+                        </div>
+                    </div>
+                    <p>${moviePost.Plot}</p>
+                </div>
+            </div>`;
+    });
 }
 
 getWatchlistDetails();
 
-//Odstranění filmů ze seznamu
+// Odstranění filmů ze seznamu
 document.addEventListener("click", (e) => {
-    //Zjištění id filmu, který chceme odstranit
     const movieId = e.target.dataset.id;
+    if (movieId) animateRemove(e.target);
+});
 
-    if(movieId) {
-        //Zjištění indexu filmu v poli
-        const indexOfId = watchlist.indexOf(movieId);
-        //Odstranění prvku na nalezené pozici
+function animateRemove(el) {
+    const wrapper = el.parentElement;
+    const card = el.closest(".movie-post-container");
+    const r = 13;
+    const circumference = 2 * Math.PI * r;
+
+    // Vytvoření červeného SVG kruhu
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+
+    svg.setAttribute("class", "icon-ring-svg");
+    svg.setAttribute("width", "30");
+    svg.setAttribute("height", "30");
+    svg.setAttribute("viewBox", "0 0 30 30");
+
+    circle.setAttribute("cx", "15");
+    circle.setAttribute("cy", "15");
+    circle.setAttribute("r", String(r));
+    circle.setAttribute("fill", "none");
+    circle.setAttribute("stroke", "#ef4444");
+    circle.setAttribute("stroke-width", "2.5");
+    circle.setAttribute("stroke-linecap", "round");
+    circle.setAttribute("stroke-dasharray", String(circumference));
+    circle.style.strokeDashoffset = String(circumference);
+
+    svg.appendChild(circle);
+    wrapper.appendChild(svg);
+
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            circle.style.transition = "stroke-dashoffset 0.5s ease";
+            circle.style.strokeDashoffset = "0";
+        });
+    });
+
+    // Po dokončení kruhu — přepni na X
+    setTimeout(() => {
+        el.classList.replace("fa-circle-minus", "fa-circle-xmark");
+        el.classList.add("icon-remove");
+        svg.remove();
+    }, 550);
+
+    // Karta vyjede vlevo
+    setTimeout(() => card.classList.add("card-removing"), 700);
+
+    // Odstranění z localStorage a re-render
+    setTimeout(() => {
+        const indexOfId = watchlist.indexOf(el.dataset.id);
         watchlist.splice(indexOfId, 1);
-        //Aktualizované pole se ukládá do localStorage
         localStorage.setItem("watchlist", JSON.stringify(watchlist));
-        //Volání funkce, která nám vyrendruje zmenšený seznam na stránku
         getWatchlistDetails();
-    }
-
-})
+    }, 1050);
+}

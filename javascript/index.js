@@ -1,125 +1,187 @@
-// Promněné a výběr DOM prvků
-const apiKey = "6fb3e59f"; // API klíč
+import { apiKey, initTheme, toggleTheme } from './config.js';
+
+initTheme();
+document.getElementById("theme-toggle").addEventListener("click", toggleTheme);
+
+// DOM prvky
 const inputFilm = document.getElementById("input-film");
 const searchBtn = document.getElementById("search-btn");
 const postContainer = document.getElementById("post-container");
-const watchListContainer = document.getElementById("watch-list-container");
-let searchArray = [];
 
 // Udržení stavu stránky při obnovení
 document.addEventListener("DOMContentLoaded", () => {
-    // Získáme parametry z URL 
     const urlParams = new URLSearchParams(window.location.search);
     const query = urlParams.get('s');
-    
-    // Pokud je v URL parametr 's' automaticky vyplníme input a spustíme hledání
     if (query) {
         inputFilm.value = query;
         runSearch(query);
     }
 });
 
-
+// Hledání přes tlačítko
 searchBtn.addEventListener("click", () => {
-    // Uložíme hodnotu do URL historie
-    const searchValue = inputFilm.value;
+    const searchValue = inputFilm.value.trim();
     if (searchValue) {
-        //Změníme URL v prohlížeci bez znovunačtení stránky
-        const newUrl = `${window.location.pathname}?s=${searchValue}`;
+        const newUrl = `${window.location.pathname}?s=${encodeURIComponent(searchValue)}`;
         window.history.pushState({ path: newUrl }, '', newUrl);
-        
-        // Spustíme hledání
         runSearch(searchValue);
     }
-})
+});
+
+// Hledání přes Enter
+inputFilm.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") searchBtn.click();
+});
 
 async function runSearch(searchValue) {
-    //První fetch: získáme seznam filmů podle názvu
-    const res = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&s=${searchValue}`)
-    const data = await res.json(); //Převádíme response na javascript object 
-    loopMovies(data);
-}
-
-
-// Zpracování výsledků hledání
-function loopMovies(data) {
     try {
-        searchArray = [];
-        //Naplní pole filmy z výsledků API
-        for(let movieData of data.Search) {
-            searchArray.push(movieData);
+        const res = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&s=${encodeURIComponent(searchValue)}`);
+        const data = await res.json();
+
+        if (!data.Search) {
+            postContainer.innerHTML = `
+                <div class="post-empty">
+                    <h2>Unable to find what you're looking for.<br>Please try another search.</h2>
+                </div>`;
+            return;
         }
-        //Funkce pro vykreslení HTML
-        renderMoviePosts(searchArray);          
-    } catch(error) {
-        //Ošetření chyby pokud API nic nevrátí (např. název filmu neexistuje)
-        console.error("Error in fetching data: " + error);
-        postContainer.innerHTML = `<div class="post-empty">
-        <h2>Unable to find what you´re looking for.<br> Please try another search.</h2>
-        </div>`;
+
+        await renderMoviePosts(data.Search);
+    } catch (error) {
+        console.error("Error fetching data:", error);
+        postContainer.innerHTML = `
+            <div class="post-empty">
+                <h2>Something went wrong. Please try again.</h2>
+            </div>`;
     }
-
-
 }
 
+async function renderMoviePosts(movies) {
+    postContainer.innerHTML = "";
 
-// Vykreslení HTML na stránku 
-function renderMoviePosts(post) {
-        postContainer.innerHTML = ""; //Čištění containeru před novým hledáním
+    const watchList = JSON.parse(localStorage.getItem("watchlist")) || [];
 
-        //Pro každý nalezený film děláme druhý fetch, pro získání detailů filmů
-        post.forEach(async movie => {
-            
-            const res = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&i=${movie.imdbID}`)
-            const moviePost = await res.json();
-            //HTML pro filmy
-            postContainer.innerHTML += `
-                <div class="movie-post-container">
-                    <img src="${moviePost.Poster}">
-                    
-                    <div class="movie-post-info">
-                        <div class="post-header">
-                            <h2>${moviePost.Title}</h2>
-                            <div class="movie-rating">
-                                <i class="fa-solid fa-star"></i>
-                                <p>${moviePost.imdbRating}</p>
-                            </div>
+    // Načtení detailů všech filmů paralelně
+    const movieDetails = await Promise.all(
+        movies.map(movie =>
+            fetch(`https://www.omdbapi.com/?apikey=${apiKey}&i=${movie.imdbID}`).then(r => r.json())
+        )
+    );
+
+    movieDetails.forEach(moviePost => {
+        const inWatchlist = watchList.includes(moviePost.imdbID);
+        const iconClass = inWatchlist ? "fa-circle-check icon-check" : "fa-circle-plus";
+
+        const posterSrc = moviePost.Poster !== "N/A" ? moviePost.Poster : null;
+
+        postContainer.innerHTML += `
+            <div class="movie-post-container">
+                <div class="poster-container">
+                    <i class="fa-solid fa-film poster-fallback"></i>
+                    ${posterSrc ? `<img src="${posterSrc}" alt="${moviePost.Title} poster" onerror="this.style.display='none'">` : ""}
+                </div>
+                <div class="movie-post-info">
+                    <div class="post-header">
+                        <h2>${moviePost.Title}</h2>
+                        <div class="movie-rating">
+                            <i class="fa-solid fa-star"></i>
+                            <p>${moviePost.imdbRating}</p>
                         </div>
-                        <div class="genre-runtime">
-                            <p>${moviePost.Runtime}</p>
-                            <p>${moviePost.Genre}</p>
-                            <div>
-                                <i class="fa-solid fa-circle-plus" data-id="${moviePost.imdbID}"></i>
-                                <p>Watchlist</p>
-                            </div>
-                        </div>
-                        <p>${moviePost.Plot}</p>
                     </div>
-                </div>`
- 
-        }); 
+                    <div class="genre-runtime">
+                        <p>${moviePost.Runtime}</p>
+                        <p>${moviePost.Genre}</p>
+                        <div>
+                            <span class="watchlist-icon-wrapper">
+                                <i class="fa-solid ${iconClass}" data-id="${moviePost.imdbID}"></i>
+                            </span>
+                            <p>Watchlist</p>
+                        </div>
+                    </div>
+                    <p>${moviePost.Plot}</p>
+                </div>
+            </div>`;
+    });
 }
 
-//Přidání do watchlistu 
-document.addEventListener("click", function (e) {
-    //zjistíme zda má kliknutý prvek atribut data-id, pokud ano přidámeho pomocí funkce addToWatchList do watchlistu
+// Přidání do watchlistu
+document.addEventListener("click", (e) => {
     const movieId = e.target.dataset.id;
-    if(movieId) {
-        addToWatchList(movieId);
-    }
-}) 
+    if (movieId) addToWatchList(movieId, e.target);
+});
 
-//Local storage operace 
-function addToWatchList(movieId) {
-    //Načteme existující seznam nebo vytvoříme prázdné pole
+function addToWatchList(movieId, iconEl) {
     let watchList = JSON.parse(localStorage.getItem("watchlist")) || [];
-    
-    //Kontrola duplicity filmů ve watchlistu
-    if(!watchList.includes(movieId)) {
+
+    if (!watchList.includes(movieId)) {
         watchList.push(movieId);
-        //Převedení seznamu na string 
         localStorage.setItem("watchlist", JSON.stringify(watchList));
-    }else {
-        alert("You have already added this film to your watchlist!");
+        animateIcon(iconEl, "added");
+        showNotification("Added to your watchlist!");
+    } else {
+        animateIcon(iconEl, "exists");
+        showNotification("Already in your watchlist!");
     }
+}
+
+function animateIcon(el, type) {
+    if (type === "exists") {
+        el.classList.add("icon-shake");
+        setTimeout(() => el.classList.remove("icon-shake"), 500);
+        return;
+    }
+
+    const wrapper = el.parentElement;
+    const r = 13;
+    const circumference = 2 * Math.PI * r;
+
+    // Vytvoření SVG kruhu
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+
+    svg.setAttribute("class", "icon-ring-svg");
+    svg.setAttribute("width", "30");
+    svg.setAttribute("height", "30");
+    svg.setAttribute("viewBox", "0 0 30 30");
+
+    circle.setAttribute("cx", "15");
+    circle.setAttribute("cy", "15");
+    circle.setAttribute("r", String(r));
+    circle.setAttribute("fill", "none");
+    circle.setAttribute("stroke", "#22c55e");
+    circle.setAttribute("stroke-width", "2.5");
+    circle.setAttribute("stroke-linecap", "round");
+    circle.setAttribute("stroke-dasharray", String(circumference));
+    circle.style.strokeDashoffset = String(circumference);
+
+    svg.appendChild(circle);
+    wrapper.appendChild(svg);
+
+    // Spuštění animace kreslení kruhu
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            circle.style.transition = "stroke-dashoffset 0.5s ease";
+            circle.style.strokeDashoffset = "0";
+        });
+    });
+
+    // Po dokončení kruhu — přepni na fajfku
+    setTimeout(() => {
+        el.classList.replace("fa-circle-plus", "fa-circle-check");
+        el.classList.add("icon-check");
+        svg.remove();
+    }, 550);
+
+}
+
+function showNotification(message) {
+    const existing = document.querySelector(".toast");
+    if (existing) existing.remove();
+
+    const toast = document.createElement("div");
+    toast.className = "toast";
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    setTimeout(() => toast.remove(), 2500);
 }
